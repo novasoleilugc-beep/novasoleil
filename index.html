@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Soleil — AI Fashion Model</title>
+<meta name="description" content="Nova Soleil — AI fashion model for brand collaboration. Fashion, bags, jewelry, makeup, shoes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* HOME HERO */
+.home-hero{position:relative;height:100svh;min-height:640px;display:flex;align-items:flex-end;overflow:hidden}
+.home-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 18%;transform:scale(1.08);transition:transform 8s ease-out}
+.home-hero-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,20,16,.96) 0%,rgba(26,20,16,.45) 42%,rgba(26,20,16,.05) 65%),linear-gradient(to right,rgba(26,20,16,.5),transparent 55%)}
+.home-hero-content{position:relative;z-index:2;padding:0 60px 100px;max-width:800px}
+.home-title{font-family:var(--ff-d);font-weight:500;font-size:clamp(72px,12vw,160px);line-height:.88;letter-spacing:-.02em;margin:14px 0 24px}
+.home-sub{font-size:18px;line-height:1.6;color:rgba(244,237,226,.68);max-width:500px;font-weight:300;margin-bottom:36px}
+.home-actions{display:flex;gap:14px;flex-wrap:wrap}
+@media(max-width:860px){.home-hero-content{padding:0 22px 80px}.home-title{font-size:clamp(56px,14vw,100px)}}
+
+/* CAPSULE NAV GRID */
+.caps-grid{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line)}
+.cap-nav-item{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:3/4;border-right:1px solid var(--line)}
+.cap-nav-item:last-child{border-right:none}
+.cap-nav-item img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease);filter:brightness(.5) saturate(.8)}
+.cap-nav-item:hover img{transform:scale(1.08);filter:brightness(.65) saturate(1)}
+.cap-nav-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:24px 16px;background:linear-gradient(to top,rgba(26,20,16,.75) 0%,transparent 55%)}
+.cap-nav-icon{font-size:22px;margin-bottom:10px}
+.cap-nav-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(244,237,226,.8);text-align:center;margin-bottom:4px}
+.cap-nav-count{font-size:10px;color:rgba(244,237,226,.45);letter-spacing:.06em}
+.cap-nav-arrow{position:absolute;bottom:14px;right:14px;width:28px;height:28px;border-radius:50%;background:rgba(244,237,226,.08);border:1px solid rgba(244,237,226,.2);display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .3s var(--ease)}
+.cap-nav-item:hover .cap-nav-arrow{background:var(--champ);border-color:var(--champ);color:var(--ink)}
+@media(max-width:860px){
+  .caps-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:auto}
+  .cap-nav-item{border-bottom:1px solid var(--line)}
+  .cap-nav-item:nth-child(2n){border-right:none}
+  .cap-nav-item:nth-child(5){grid-column:1/-1;aspect-ratio:16/5}
+}
+
+/* STATEMENT */
+.home-statement{padding:120px 60px;max-width:1100px;margin:0 auto;border-bottom:1px solid var(--line)}
+.home-statement p{font-family:var(--ff-d);font-size:clamp(26px,3.5vw,44px);line-height:1.38;color:rgba(244,237,226,.4);letter-spacing:-.01em}
+.home-statement em{font-style:italic;color:var(--bone)}
+@media(max-width:860px){.home-statement{padding:70px 22px}}
+
+/* PRICING STRIP */
+.pricing-strip{padding:80px 60px;background:var(--umber);border-top:1px solid var(--line)}
+.pricing-strip h2{font-family:var(--ff-d);font-style:italic;font-size:clamp(34px,5vw,56px);margin:8px 0 14px;letter-spacing:-.01em}
+.pricing-strip .sub{font-size:15px;color:rgba(244,237,226,.55);margin-bottom:48px;max-width:560px}
+.price-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.price-card{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:32px 28px;transition:border-color .3s,transform .35s var(--ease)}
+.price-card:hover{border-color:var(--champ-dim);transform:translateY(-4px)}
+.price-card.featured{border-color:var(--champ);background:linear-gradient(160deg,#25190f,var(--ink));position:relative}
+.price-badge{position:absolute;top:-12px;left:24px;background:var(--champ);color:var(--ink);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:100px;font-weight:600}
+.price-cat{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--bronze);margin-bottom:8px}
+.price-card h3{font-family:var(--ff-d);font-size:22px;margin-bottom:10px}
+.price-num{font-family:var(--ff-d);font-size:34px;margin-bottom:20px}
+.price-num small{font-family:var(--ff-b);font-size:12px;color:rgba(244,237,226,.45)}
+.price-list li{font-size:12.5px;color:rgba(244,237,226,.6);padding-left:16px;position:relative;margin-bottom:7px;line-height:1.6}
+.price-list li::before{content:'';position:absolute;left:0;top:9px;width:7px;height:1px;background:var(--champ)}
+.price-list{margin-bottom:26px}
+.price-note{text-align:center;margin-top:32px;font-size:12.5px;color:rgba(244,237,226,.4);font-style:italic;font-family:var(--ff-d)}
+@media(max-width:860px){.pricing-strip{padding:60px 22px}.price-cards{grid-template-columns:1fr;max-width:420px}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <div class="lb-inner">
+    <div class="lb-sidebar">
+      <p class="eyebrow" id="lbCapsule"></p>
+      <h3 class="lb-heading" id="lbTitle"></h3>
+      <p class="lb-desc" id="lbDesc"></p>
+      <span class="lb-badge" id="lbType"></span>
+    </div>
+    <div class="lb-main">
+      <div class="lb-img-wrap" id="lbImg"></div>
+      <div class="lb-thumbs" id="lbThumbs"></div>
+    </div>
+  </div>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <button class="lb-nav lb-next" id="lbNext">›</button>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a href="index.html" class="nav-mark">NOVA SOLEIL</a>
+  <div class="nav-pages" id="navPages"></div>
+  <a id="navCta" class="nav-cta" href="#pricing">Book Nova</a>
+  <button class="nav-mobile-toggle" id="mobileToggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <button class="nav-drawer-close" id="drawerClose">✕</button>
+  <div id="drawerLinks"></div>
+</div>
+
+<!-- HOME HERO -->
+<header class="home-hero">
+  <img id="heroImg" class="home-hero-img" alt="Nova Soleil">
+  <div class="home-hero-veil"></div>
+  <div class="home-hero-content">
+    <p class="eyebrow rv">AI Fashion Model — Available for Brand Collaboration</p>
+    <h1 class="home-title rv">Nova<br>Soleil</h1>
+    <p class="home-sub rv" id="heroSub"></p>
+    <div class="home-actions rv">
+      <a href="#capsules" class="btn btn-primary">See campaigns</a>
+      <a href="#pricing" class="btn btn-ghost">View rates</a>
+    </div>
+  </div>
+  <div class="scroll-line-wrap"><span>Scroll</span><div class="scroll-line"></div></div>
+</header>
+
+<!-- STATEMENT -->
+<section class="home-statement">
+  <p class="rv">Nova is fully AI‑generated — built for brands that need consistent, premium imagery <em>without the overhead of a traditional shoot.</em> No travel. No scheduling. No usage disputes.</p>
+</section>
+
+<!-- CAPSULE NAV -->
+<section id="capsules">
+  <div class="caps-grid" id="capsGrid"></div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-strip" id="pricing">
+  <div style="max-width:1100px;margin:0 auto">
+    <p class="eyebrow rv">Collaborate with Nova</p>
+    <h2 class="rv">Three ways to work together</h2>
+    <p class="sub rv">Ready-to-publish assets — no shot list approvals, no model release paperwork.</p>
+    <div class="price-cards">
+      <div class="price-card rv">
+        <p class="price-cat">Starter</p><h3>Image Set</h3>
+        <p class="price-num">$120<small> / set of 10</small></p>
+        <ul class="price-list"><li>10 hi-res images</li><li>All key angles covered</li><li>Commercial usage rights</li><li>3-day delivery</li></ul>
+        <a class="btn btn-ghost btn-full price-cta" data-pkg="Image Set">Enquire</a>
+      </div>
+      <div class="price-card featured rv">
+        <p class="price-badge">Most booked</p>
+        <p class="price-cat">Campaign</p><h3>Video Ad</h3>
+        <p class="price-num">$220<small> / 30–60 sec</small></p>
+        <ul class="price-list"><li>Scripted + voiced UGC video</li><li>Platform-optimised cuts</li><li>1 revision included</li><li>5-day delivery</li></ul>
+        <a class="btn btn-primary btn-full price-cta" data-pkg="Video Ad">Enquire</a>
+      </div>
+      <div class="price-card rv">
+        <p class="price-cat">Partnership</p><h3>Monthly Retainer</h3>
+        <p class="price-num">$550<small> / month</small></p>
+        <ul class="price-list"><li>20 images + 4 videos</li><li>Content calendar included</li><li>Priority turnaround</li><li>Cancel anytime</li></ul>
+        <a class="btn btn-ghost btn-full price-cta" data-pkg="Monthly Retainer">Enquire</a>
+      </div>
+    </div>
+    <p class="price-note rv">First-time brands receive one complimentary sample image before committing.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <a href="index.html" class="footer-logo">NOVA SOLEIL</a>
+  <div class="footer-links" id="footerLinks"></div>
+  <a class="footer-email" id="footerEmail"></a>
+  <div class="footer-social" id="footerSocial"></div>
+  <p class="footer-fine">© 2026 Nova Soleil. All imagery is AI-generated. Available for brand licensing worldwide.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="shared.js"></script>
+</body>
+</html>

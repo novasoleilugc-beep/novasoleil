@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1410;--bone:#f4ede2;--umber:#2b221a;--umber2:#3a2e22;--champ:#d4af7a;--champ-dim:rgba(212,175,122,.22);--line:rgba(244,237,226,.1);--ff-d:'Fraunces',serif;--ff-b:'Inter',sans-serif;--ease:cubic-bezier(.16,1,.3,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--bone);font-family:var(--ff-b);min-height:100vh}
+input,textarea,select,button{font-family:var(--ff-b)}
+/* LOCK */
+.lock{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999;transition:opacity .4s}
+.lock.hide{opacity:0;pointer-events:none}
+.lock h1{font-family:var(--ff-d);font-style:italic;font-size:34px}
+.lock p{font-size:13px;color:rgba(244,237,226,.4)}
+.lock input{background:var(--umber2);border:1px solid var(--line);color:var(--bone);padding:13px 18px;border-radius:8px;font-size:15px;width:270px;text-align:center;outline:none;transition:border-color .25s}
+.lock input:focus{border-color:var(--champ)}
+.lock-err{color:#f0a0a0;font-size:12px;display:none}
+/* BTNS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 24px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;border-radius:100px;cursor:pointer;font-weight:500;transition:all .3s;border:none;white-space:nowrap}
+.btn-gold{background:var(--champ);color:var(--ink)}.btn-gold:hover{background:var(--bone)}
+.btn-outline{border:1px solid rgba(244,237,226,.22);color:var(--bone);background:none}.btn-outline:hover{border-color:var(--champ);color:var(--champ)}
+.btn-red{border:1px solid rgba(240,160,160,.3);color:#f0a0a0;background:none}.btn-red:hover{background:rgba(240,160,160,.1)}
+.btn-sm{padding:7px 15px;font-size:11px}
+/* LAYOUT */
+.wrap{display:none;min-height:100vh}.wrap.show{display:flex}
+.sidebar{width:210px;flex-shrink:0;background:var(--umber);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.s-logo{padding:20px;font-family:var(--ff-d);font-size:14px;letter-spacing:.12em;border-bottom:1px solid var(--line)}
+.s-logo span{display:block;font-size:9.5px;color:rgba(244,237,226,.35);font-family:var(--ff-b);margin-top:2px;letter-spacing:.07em}
+.s-nav{flex:1;padding:10px}
+.s-sec{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(244,237,226,.3);padding:8px 10px 3px;margin-top:6px}
+.s-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:6px;background:none;border:none;color:rgba(244,237,226,.5);font-size:12px;cursor:pointer;text-align:left;transition:all .2s}
+.s-btn:hover{background:rgba(244,237,226,.05);color:var(--bone)}
+.s-btn.active{background:var(--champ-dim);color:var(--bone)}
+.s-btn .ic{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.s-foot{padding:12px 14px;border-top:1px solid var(--line)}
+.main{flex:1;overflow-y:auto}
+.topbar{padding:14px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:rgba(26,20,16,.7);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10}
+.topbar-title{font-size:14.5px;font-weight:500}
+/* PAGES */
+.page{display:none;padding:26px}.page.active{display:block}
+/* CARDS */
+.card{background:var(--umber2);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:13px}
+.card-title{font-size:13px;font-weight:500;margin-bottom:12px}
+/* FORMS */
+.frow{margin-bottom:12px}
+.frow label{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:rgba(244,237,226,.4);margin-bottom:5px}
+.frow input,.frow textarea,.frow select{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:10px 12px;border-radius:7px;font-size:13px;outline:none;transition:border-color .25s;resize:vertical}
+.frow input:focus,.frow textarea:focus,.frow select:focus{border-color:var(--champ)}
+.fhint{font-size:11px;color:rgba(244,237,226,.3);margin-top:4px;line-height:1.5}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.brow{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+/* UPLOAD ZONE */
+.uzone{border:2px dashed rgba(212,175,122,.28);border-radius:10px;padding:26px 18px;text-align:center;cursor:pointer;transition:all .3s;position:relative;background:var(--ink)}
+.uzone:hover,.uzone.over{border-color:var(--champ);background:rgba(212,175,122,.04)}
+.uzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uzone .uico{font-size:24px;margin-bottom:7px;opacity:.45}
+.uzone p{font-size:12.5px;color:rgba(244,237,226,.5);line-height:1.6}
+.uzone strong{color:var(--champ)}
+.prog{margin-top:8px;display:none}
+.prog-bar{height:3px;background:var(--umber2);border-radius:2px;overflow:hidden;margin-top:5px}
+.prog-fill{height:100%;background:var(--champ);transition:width .3s}
+.prog-lbl{font-size:11px;color:rgba(244,237,226,.45)}
+/* IMG GRID */
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:10px}
+.iitem{position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--umber);border:1px solid var(--line)}
+.iitem img{width:100%;height:100%;object-fit:cover}
+.iitem .ibtn{position:absolute;background:rgba(20,14,10,.88);border:none;color:var(--bone);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;opacity:0;transition:opacity .2s}
+.iitem:hover .ibtn{opacity:1}
+.iitem .ibtn.irm{top:3px;right:3px;width:19px;height:19px;border-radius:50%;color:#f0a0a0;font-size:11px}
+.iitem .ibtn.icp{bottom:3px;left:3px;right:3px;padding:3px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.iitem.cov::after{content:'Cover';position:absolute;top:3px;left:3px;background:var(--champ);color:var(--ink);font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;text-transform:uppercase}
+.iempty{grid-column:1/-1;text-align:center;padding:22px;color:rgba(244,237,226,.28);font-size:12px}
+/* CAMPAIGN ITEMS */
+.citem{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--ink);border:1px solid var(--line);border-radius:8px;margin-bottom:7px;transition:border-color .2s}
+.citem:hover{border-color:var(--champ-dim)}
+.cthumb{width:42px;height:42px;border-radius:5px;overflow:hidden;flex-shrink:0;background:var(--umber)}
+.cthumb img{width:100%;height:100%;object-fit:cover}
+.cinfo{flex:1;min-width:0}
+.cinfo strong{display:block;font-size:13px;margin-bottom:1px}
+.cinfo span{font-size:11px;color:rgba(244,237,226,.38)}
+.cacts{display:flex;gap:5px;flex-shrink:0}
+.ibtn2{width:28px;height:28px;border-radius:6px;background:var(--umber2);border:1px solid var(--line);color:rgba(244,237,226,.55);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s}
+.ibtn2:hover{background:var(--champ-dim);border-color:var(--champ);color:var(--bone)}
+.ibtn2.del:hover{background:rgba(240,160,160,.1);border-color:#f0a0a0;color:#f0a0a0}
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(6,4,2,.9);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;padding:14px}
+.moverlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--umber);border:1px solid var(--line);border-radius:14px;width:100%;max-width:660px;max-height:92vh;overflow-y:auto}
+.mhead{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--umber);z-index:1}
+.mhead h3{font-family:var(--ff-d);font-size:18px}
+.mclose{background:none;border:none;color:rgba(244,237,226,.45);font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .2s}
+.mclose:hover{background:var(--umber2);color:var(--bone)}
+.mbody{padding:20px}
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:16px}
+.scard{background:var(--umber2);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+.snum{font-family:var(--ff-d);font-size:24px;color:var(--champ)}
+.slbl{font-size:10px;color:rgba(244,237,226,.4);margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+/* EXPORT */
+.ebox{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:11px;font-family:monospace;font-size:11px;color:#a8e0c0;height:150px;overflow-y:auto;white-space:pre;resize:none;width:100%;outline:none}
+/* SETTINGS ROW */
+.setrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.setrow:last-child{border-bottom:none}
+.setlbl{font-size:13px;font-weight:500;flex:1}
+.setdesc{font-size:11px;color:rgba(244,237,226,.38);margin-top:1px}
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--champ);color:var(--ink);padding:10px 22px;border-radius:100px;font-size:12.5px;font-weight:500;z-index:999;transition:transform .35s var(--ease)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+/* API BOX */
+.apibox{background:rgba(212,175,122,.07);border:1px solid var(--champ-dim);border-radius:8px;padding:12px;margin-bottom:13px}
+@media(max-width:680px){
+  .sidebar{width:48px}.s-logo span,.s-btn span,.s-sec{display:none}
+  .s-logo{padding:14px 6px;text-align:center;font-size:11px}.s-btn{justify-content:center;padding:9px}.page{padding:14px}.fgrid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div class="lock" id="lockScreen">
+  <h1>Nova Admin</h1>
+  <p>Enter your password to manage the portfolio</p>
+  <input type="password" id="pwIn" placeholder="Password" autocomplete="off">
+  <button class="btn btn-gold" id="pwBtn">Unlock →</button>
+  <p class="lock-err" id="pwErr">Wrong password. Try again.</p>
+</div>
+
+<!-- WRAP -->
+<div class="wrap" id="wrap">
+  <aside class="sidebar">
+    <div class="s-logo">NOVA<span>Admin Panel</span></div>
+    <nav class="s-nav">
+      <p class="s-sec">Overview</p>
+      <button class="s-btn active" data-pg="dashboard"><span class="ic">📊</span><span>Dashboard</span></button>
+      <p class="s-sec">Portfolio</p>
+      <button class="s-btn" data-pg="images"><span class="ic">🖼️</span><span>Upload Images</span></button>
+      <button class="s-btn" data-pg="campaigns"><span class="ic">📁</span><span>Campaigns</span></button>
+      <p class="s-sec">Website</p>
+      <button class="s-btn" data-pg="content"><span class="ic">✏️</span><span>Edit Text</span></button>
+      <button class="s-btn" data-pg="social"><span class="ic">🔗</span><span>Social Links</span></button>
+      <p class="s-sec">System</p>
+      <button class="s-btn" data-pg="publish"><span class="ic">🚀</span><span>Save & Publish</span></button>
+      <button class="s-btn" data-pg="settings"><span class="ic">⚙️</span><span>Settings</span></button>
+    </nav>
+    <div class="s-foot"><a href="index.html" class="btn btn-outline btn-sm" style="width:100%;justify-content:center">← Live site</a></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="tbTitle">Dashboard</div>
+      <button class="btn btn-gold btn-sm" onclick="goPage('publish')">🚀 Save & Publish</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pg-dashboard">
+      <div class="srow" id="statsRow"></div>
+      <div class="card">
+        <div class="card-title">👋 Welcome, Nova</div>
+        <p style="font-size:12.5px;color:rgba(244,237,226,.55);line-height:1.7;margin-bottom:13px">Manage your entire portfolio from here. Upload images directly from your computer, add campaigns, edit website text and social links. When done, click <strong>Save & Publish</strong>.</p>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-gold btn-sm" onclick="goPage('images')">🖼️ Upload Images</button>
+          <button class="btn btn-outline btn-sm" onclick="goPage('campaigns')">📁 Campaigns</button>
+          <button class="btn btn-outline btn-sm" onclick="goPage('content')">✏️ Edit Text</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPLOAD IMAGES -->
+    <div class="page" id="pg-images">
+      <div class="card">
+        <div class="card-title">🖼️ Upload Images Directly From Your Computer</div>
+        <p style="font-size:12px;color:rgba(244,237,226,.45);line-height:1.6;margin-bottom:12px">Drag any photo from your computer straight into the box. Images are hosted on <strong>ImgBB</strong> (free, no account limit). After uploading, add them to any campaign below.</p>
+        <div class="apibox" id="apiSetup">
+          <p style="font-size:12.5px;font-weight:500;margin-bottom:7px">⚙️ One-time setup — 2 minutes</p>
+          <p style="font-size:12px;color:rgba(244,237,226,.5);line-height:1.65;margin-bottom:9px">
+            1. Open <strong>imgbb.com</strong> in a new tab → create a free account<br>
+            2. Go to <strong>imgbb.com/api</strong> → copy your API key<br>
+            3. Paste it below — saved in your browser, never needed again
+          </p>
+          <div style="display:flex;gap:7px">
+            <input type="text" id="apiKeyIn" placeholder="Paste your ImgBB API key here" style="flex:1;background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:9px 11px;border-radius:6px;font-size:13px;outline:none;transition:border-color .2s">
+            <button class="btn btn-gold btn-sm" id="saveKeyBtn">Save</button>
+          </div>
+          <p id="keyStatus" style="font-size:11px;margin-top:5px;color:rgba(244,237,226,.38)"></p>
+        </div>
+        <div class="uzone" id="mainZone">
+          <input type="file" id="mainFile" accept="image/*" multiple>
+          <div class="uico">📸</div>
+          <p><strong>Click here or drag images from your computer</strong><br>JPG, PNG, WEBP — multiple at once — uploads instantly</p>
+        </div>
+        <div class="prog" id="mainProg">
+          <div class="prog-lbl" id="mainLbl">Uploading...</div>
+          <div class="prog-bar"><div class="prog-fill" id="mainFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📚 Your Image Library (<span id="imgCnt">0</span> images)</div>
+        <p style="font-size:11.5px;color:rgba(244,237,226,.38);margin-bottom:9px">Click any image to copy its URL. Paste that URL when adding images to a campaign.</p>
+        <div class="igrid" id="imgLib"><div class="iempty">No images yet. Upload above.</div></div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGNS -->
+    <div class="page" id="pg-campaigns">
+      <div class="card">
+        <div class="card-title">📁 Manage Campaigns</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px" id="capPills"></div>
+        <div id="campList"></div>
+        <div class="brow"><button class="btn btn-gold btn-sm" id="addCampBtn">+ Add new campaign</button></div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="page" id="pg-content">
+      <div class="card">
+        <div class="card-title">✏️ Edit Website Text</div>
+        <div class="frow"><label>Hero tagline</label><input type="text" id="heroTag"></div>
+        <div class="frow"><label>Hero subtitle</label><textarea id="heroSub" rows="2"></textarea></div>
+        <div class="frow"><label>Contact email</label><input type="email" id="contactEmail"></div>
+        <div class="brow"><button class="btn btn-gold btn-sm" id="saveTextBtn">Save text</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏷️ Capsule Descriptions</div>
+        <div id="descEditor"></div>
+      </div>
+    </div>
+
+    <!-- SOCIAL -->
+    <div class="page" id="pg-social">
+      <div class="card">
+        <div class="card-title">🔗 Social Media Links</div>
+        <p style="font-size:12px;color:rgba(244,237,226,.38);margin-bottom:13px">Paste your full profile URLs below. These show in your website footer.</p>
+        <div class="frow"><label>Instagram</label><input type="url" id="sIG" placeholder="https://www.instagram.com/novasoleil"></div>
+        <div class="frow"><label>TikTok</label><input type="url" id="sTT" placeholder="https://www.tiktok.com/@novasoleil"></div>
+        <div class="frow"><label>YouTube</label><input type="url" id="sYT" placeholder="https://www.youtube.com/@NovaSoleilOfficial"></div>
+        <div class="frow"><label>Fiverr</label><input type="url" id="sFV" placeholder="https://www.fiverr.com/novasoleil"></div>
+        <div class="brow"><button class="btn btn-gold btn-sm" id="saveSocBtn">Save links</button></div>
+      </div>
+    </div>
+
+    <!-- PUBLISH -->
+    <div class="page" id="pg-publish">
+      <div class="card">
+        <div class="card-title">🚀 Save & Publish Your Changes</div>
+        <p style="font-size:12.5px;color:rgba(244,237,226,.55);line-height:1.7;margin-bottom:14px">All changes live in your browser until you publish. Follow these 4 steps to make them live on your website:</p>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px">
+          <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line);align-items:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div><div><strong style="font-size:12.5px">Click "Generate data.js" below</strong><p style="font-size:11px;color:rgba(244,237,226,.4)">Creates your updated website data file</p></div></div>
+          <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line);align-items:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div><div><strong style="font-size:12.5px">Click "Copy code"</strong><p style="font-size:11px;color:rgba(244,237,226,.4)">Copies everything to your clipboard</p></div></div>
+          <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line);align-items:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div><div><strong style="font-size:12.5px">Open data.js on your computer → Select All → Paste → Save</strong><p style="font-size:11px;color:rgba(244,237,226,.4)">Replaces old code with new code</p></div></div>
+          <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line);align-items:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div><div><strong style="font-size:12.5px">Re-upload nova-v3-site folder to Netlify</strong><p style="font-size:11px;color:rgba(244,237,226,.4)">netlify.com → Deploys → drag folder → live in 30 seconds</p></div></div>
+        </div>
+        <div class="brow">
+          <button class="btn btn-gold btn-sm" id="genBtn">Generate data.js</button>
+          <button class="btn btn-outline btn-sm" id="copyBtn" style="display:none">Copy code</button>
+        </div>
+        <textarea class="ebox" id="exportBox" style="margin-top:12px;display:none" readonly></textarea>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="pg-settings">
+      <div class="card">
+        <div class="card-title">⚙️ Settings</div>
+        <div class="setrow">
+          <div><div class="setlbl">Change admin password</div><div class="setdesc">Minimum 6 characters</div></div>
+          <div style="display:flex;gap:6px">
+            <input type="password" id="newPwIn" placeholder="New password" style="background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:8px 11px;border-radius:6px;font-size:12.5px;outline:none;width:140px">
+            <button class="btn btn-outline btn-sm" id="chPwBtn">Change</button>
+          </div>
+        </div>
+        <div class="setrow">
+          <div><div class="setlbl">ImgBB API key</div><div class="setdesc">Reset to enter a different key</div></div>
+          <button class="btn btn-outline btn-sm" id="resetKeyBtn">Reset</button>
+        </div>
+        <div class="setrow">
+          <div><div class="setlbl">Reset all changes</div><div class="setdesc">Go back to original data.js values</div></div>
+          <button class="btn btn-red btn-sm" id="resetAllBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end wrap -->
+
+<!-- CAMPAIGN MODAL -->
+<div class="moverlay" id="campModal">
+  <div class="modal">
+    <div class="mhead">
+      <h3 id="mTitle">New Campaign</h3>
+      <button class="mclose" id="mClose">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="frow"><label>Brand / Campaign name *</label><input type="text" id="mBrand" placeholder="e.g. Mejuri Gold Collection"></div>
+        <div class="frow"><label>Type</label><select id="mType"><option>Campaign</option><option>Editorial</option><option>Macro</option><option>Beauty</option><option>Product</option></select></div>
+      </div>
+      <div class="frow"><label>Description</label><textarea id="mDesc" rows="3" placeholder="Describe what this campaign shows for visitors..."></textarea></div>
+      <div class="frow">
+        <label>Campaign Images</label>
+        <p style="font-size:11.5px;color:rgba(244,237,226,.38);margin-bottom:8px">Upload directly from your computer OR paste a URL from your Image Library. First image becomes the cover automatically.</p>
+        <div class="uzone" id="mZone" style="padding:16px;margin-bottom:8px">
+          <input type="file" id="mFile" accept="image/*" multiple>
+          <div class="uico" style="font-size:20px">📸</div>
+          <p style="font-size:12px">Drag images here or click to browse</p>
+        </div>
+        <div style="display:flex;gap:7px;margin-bottom:8px">
+          <input type="text" id="mUrl" placeholder="Or paste image URL from your library" style="flex:1;background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:9px 11px;border-radius:6px;font-size:12.5px;outline:none">
+          <button class="btn btn-outline btn-sm" id="addUrlBtn">Add</button>
+        </div>
+        <div class="igrid" id="mGallery" style="grid-template-columns:repeat(auto-fill,minmax(72px,1fr))"><div class="iempty">No images yet</div></div>
+      </div>
+      <div class="brow">
+        <button class="btn btn-gold btn-sm" id="saveCampBtn">Save campaign</button>
+        <button class="btn btn-outline btn-sm" id="cancelCampBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────
+let W = JSON.parse(JSON.stringify(NOVA));
+let lib = JSON.parse(localStorage.getItem('nova_imgs')||'[]');
+let apiKey = localStorage.getItem('nova_key')||'';
+let activeCap = W.capsules[0]?.id||'fashion';
+let editIdx = null;
+let mImgs = [];
+
+// ── LOCK ───────────────────────────────────────
+document.getElementById('pwBtn').addEventListener('click', tryUnlock);
+document.getElementById('pwIn').addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+function tryUnlock(){
+  if(document.getElementById('pwIn').value === W.adminPassword){
+    const lk = document.getElementById('lockScreen');
+    lk.classList.add('hide');
+    setTimeout(()=>{ lk.style.display='none'; document.getElementById('wrap').classList.add('show'); initAdmin(); },400);
+  } else {
+    document.getElementById('pwErr').style.display='block';
+    document.getElementById('pwIn').value='';
+  }
+}
+
+// ── NAVIGATION ─────────────────────────────────
+const pageNames = {dashboard:'Dashboard',images:'Upload Images',campaigns:'Manage Campaigns',content:'Edit Content',social:'Social Links',publish:'Save & Publish',settings:'Settings'};
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pg-'+id)?.classList.add('active');
+  document.querySelectorAll('.s-btn[data-pg="'+id+'"]').forEach(b=>b.classList.add('active'));
+  document.getElementById('tbTitle').textContent = pageNames[id]||id;
+}
+document.querySelectorAll('.s-btn[data-pg]').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.pg)));
+
+// ── INIT ───────────────────────────────────────
+function initAdmin(){
+  renderStats(); renderLib(); renderPills(); renderCamps(); renderContent(); renderSocial(); renderDescEditor();
+  if(apiKey){ document.getElementById('apiSetup').style.display='none'; }
+  document.getElementById('apiKeyIn').value = apiKey;
+  document.getElementById('keyStatus').textContent = apiKey ? '✅ API key ready' : '';
+}
+
+// ── STATS ──────────────────────────────────────
+function renderStats(){
+  const tc = W.capsules.reduce((s,c)=>s+c.campaigns.length,0);
+  const ti = W.capsules.reduce((s,c)=>s+c.campaigns.reduce((ss,x)=>ss+x.images.length,0),0);
+  document.getElementById('statsRow').innerHTML =
+    [{n:W.capsules.length,l:'Capsules'},{n:tc,l:'Campaigns'},{n:ti+lib.length,l:'Images'},{n:W.capsules.filter(c=>c.campaigns.length>0).length,l:'Active capsules'}]
+    .map(s=>`<div class="scard"><div class="snum">${s.n}</div><div class="slbl">${s.l}</div></div>`).join('');
+}
+
+// ── API KEY ────────────────────────────────────
+document.getElementById('saveKeyBtn').addEventListener('click',()=>{
+  const k=document.getElementById('apiKeyIn').value.trim();
+  if(!k){toast('Please paste your ImgBB API key');return;}
+  apiKey=k; localStorage.setItem('nova_key',k);
+  document.getElementById('keyStatus').textContent='✅ API key saved!';
+  document.getElementById('apiSetup').style.display='none';
+  toast('ImgBB key saved! You can now upload images directly.');
+});
+document.getElementById('resetKeyBtn')?.addEventListener('click',()=>{
+  apiKey=''; localStorage.removeItem('nova_key');
+  document.getElementById('apiSetup').style.display='block';
+  toast('API key cleared');
+});
+
+// ── UPLOAD ENGINE ──────────────────────────────
+async function uploadOne(file){
+  if(!apiKey){
+    const url=URL.createObjectURL(file);
+    lib.unshift({url,name:file.name,date:new Date().toLocaleDateString()});
+    saveLib(); return url;
+  }
+  const fd=new FormData(); fd.append('image',file);
+  const res=await fetch('https://api.imgbb.com/1/upload?key='+apiKey,{method:'POST',body:fd});
+  const d=await res.json();
+  if(d.success){ const url=d.data.url; lib.unshift({url,name:file.name,date:new Date().toLocaleDateString()}); saveLib(); return url; }
+  throw new Error(d.error?.message||'Upload failed');
+}
+function saveLib(){ localStorage.setItem('nova_imgs',JSON.stringify(lib.slice(0,300))); }
+
+async function handleFiles(files, onUrl, progId, fillId, lblId){
+  const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
+  if(!imgs.length)return;
+  const prog=document.getElementById(progId), fill=document.getElementById(fillId), lbl=document.getElementById(lblId);
+  if(prog) prog.style.display='block';
+  for(let i=0;i<imgs.length;i++){
+    if(lbl) lbl.textContent=`Uploading ${i+1} of ${imgs.length}: ${imgs[i].name}`;
+    if(fill) fill.style.width=((i/imgs.length)*100)+'%';
+    try{ const url=await uploadOne(imgs[i]); if(onUrl) onUrl(url); }
+    catch(e){ toast('Failed: '+imgs[i].name); }
+  }
+  if(fill) fill.style.width='100%';
+  if(lbl) lbl.textContent='Done!';
+  setTimeout(()=>{ if(prog) prog.style.display='none'; },1400);
+  renderLib(); renderStats();
+  toast(imgs.length+' image'+(imgs.length>1?'s':'')+' uploaded!');
+}
+
+function setupZone(zoneId,fileId,onUrl,progId,fillId,lblId){
+  const z=document.getElementById(zoneId), f=document.getElementById(fileId);
+  if(!z||!f)return;
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over')});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');handleFiles(e.dataTransfer.files,onUrl,progId,fillId,lblId);});
+  f.addEventListener('change',()=>{handleFiles(f.files,onUrl,progId,fillId,lblId);f.value='';});
+}
+setupZone('mainZone','mainFile',null,'mainProg','mainFill','mainLbl');
+
+// ── IMAGE LIBRARY ──────────────────────────────
+function renderLib(){
+  const el=document.getElementById('imgLib'), cnt=document.getElementById('imgCnt');
+  if(cnt) cnt.textContent=lib.length;
+  if(!lib.length){el.innerHTML='<div class="iempty">No images yet. Upload above.</div>';return;}
+  el.innerHTML=lib.map((img,i)=>`
+    <div class="iitem" title="${img.name}">
+      <img src="${img.url}" alt="" loading="lazy">
+      <button class="ibtn irm" onclick="rmLib(${i})">✕</button>
+      <button class="ibtn icp" onclick="cpUrl('${img.url}')">Copy URL</button>
+    </div>`).join('');
+}
+function rmLib(i){lib.splice(i,1);saveLib();renderLib();renderStats();}
+function cpUrl(url){navigator.clipboard.writeText(url).then(()=>toast('URL copied! Paste it into a campaign.'));}
+
+// ── CAPSULE PILLS ──────────────────────────────
+function renderPills(){
+  document.getElementById('capPills').innerHTML=W.capsules.map(c=>
+    `<button class="btn btn-sm ${c.id===activeCap?'btn-gold':'btn-outline'}" onclick="swCap('${c.id}')">${c.icon} ${c.title}</button>`
+  ).join('');
+}
+function swCap(id){activeCap=id;renderPills();renderCamps();}
+
+// ── CAMPAIGN LIST ──────────────────────────────
+function renderCamps(){
+  const el=document.getElementById('campList');
+  const cap=W.capsules.find(c=>c.id===activeCap);
+  if(!cap)return;
+  if(!cap.campaigns.length){el.innerHTML='<div style="text-align:center;padding:22px;color:rgba(244,237,226,.28);font-size:12.5px">No campaigns yet in '+cap.title+'. Add one below.</div>';return;}
+  el.innerHTML=cap.campaigns.map((camp,i)=>`
+    <div class="citem">
+      <div class="cthumb"><img src="${camp.cover}" alt="" onerror="this.style.display='none'"></div>
+      <div class="cinfo"><strong>${camp.brand}</strong><span>${camp.type} · ${camp.images.length} image${camp.images.length!==1?'s':''}</span></div>
+      <div class="cacts">
+        <button class="ibtn2" onclick="openEdit(${i})" title="Edit">✎</button>
+        <button class="ibtn2 del" onclick="delCamp(${i})" title="Delete">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── CAMPAIGN MODAL ─────────────────────────────
+const modal=document.getElementById('campModal');
+function openNew(){editIdx=null;mImgs=[];document.getElementById('mTitle').textContent='New Campaign';document.getElementById('mBrand').value='';document.getElementById('mType').value='Campaign';document.getElementById('mDesc').value='';renderMGallery();modal.classList.add('open');}
+function openEdit(i){editIdx=i;const camp=W.capsules.find(c=>c.id===activeCap).campaigns[i];mImgs=camp.images.slice();document.getElementById('mTitle').textContent='Edit Campaign';document.getElementById('mBrand').value=camp.brand;document.getElementById('mType').value=camp.type;document.getElementById('mDesc').value=camp.description;renderMGallery();modal.classList.add('open');}
+function closeModal(){modal.classList.remove('open');}
+document.getElementById('mClose').addEventListener('click',closeModal);
+document.getElementById('cancelCampBtn').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.getElementById('addCampBtn').addEventListener('click',openNew);
+document.getElementById('addUrlBtn').addEventListener('click',()=>{const u=document.getElementById('mUrl').value.trim();if(u){mImgs.push(u);document.getElementById('mUrl').value='';renderMGallery();}});
+
+setupZone('mZone','mFile',(url)=>{mImgs.push(url);renderMGallery();},'','','');
+
+// Override modal zone to not use progress elements
+const mZone=document.getElementById('mZone'),mFile=document.getElementById('mFile');
+if(mZone&&mFile){
+  mZone.addEventListener('dragover',e=>{e.preventDefault();mZone.classList.add('over')});
+  mZone.addEventListener('dragleave',()=>mZone.classList.remove('over'));
+  mZone.addEventListener('drop',e=>{e.preventDefault();mZone.classList.remove('over');handleModalFiles(e.dataTransfer.files);});
+  mFile.addEventListener('change',()=>{handleModalFiles(mFile.files);mFile.value='';});
+}
+async function handleModalFiles(files){
+  const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
+  for(const f of imgs){try{const url=await uploadOne(f);mImgs.push(url);renderMGallery();}catch(e){toast('Failed: '+f.name);}}
+  renderLib();renderStats();
+}
+
+function renderMGallery(){
+  const g=document.getElementById('mGallery');
+  if(!mImgs.length){g.innerHTML='<div class="iempty">No images yet</div>';return;}
+  g.innerHTML=mImgs.map((url,i)=>`
+    <div class="iitem ${i===0?'cov':''}" title="${i===0?'Cover':''}">
+      <img src="${url}" alt="" loading="lazy" onerror="this.src=''">
+      <button class="ibtn irm" onclick="mRm(${i})">✕</button>
+      ${i>0?`<button class="ibtn icp" onclick="mCov(${i})">Cover</button>`:''}
+    </div>`).join('');
+}
+function mRm(i){mImgs.splice(i,1);renderMGallery();}
+function mCov(i){const u=mImgs.splice(i,1)[0];mImgs.unshift(u);renderMGallery();}
+
+document.getElementById('saveCampBtn').addEventListener('click',()=>{
+  const brand=document.getElementById('mBrand').value.trim();
+  if(!brand){toast('Please enter a brand or campaign name');return;}
+  const cap=W.capsules.find(c=>c.id===activeCap);
+  const obj={id:brand.toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+Date.now(),brand,type:document.getElementById('mType').value,cover:mImgs[0]||'',images:mImgs.slice(),videos:[],description:document.getElementById('mDesc').value.trim()};
+  if(editIdx===null){cap.campaigns.push(obj);}else{cap.campaigns[editIdx]=obj;}
+  closeModal();renderCamps();renderStats();toast('Campaign saved! Click Save & Publish to go live.');
+});
+function delCamp(i){if(!confirm('Delete this campaign? This cannot be undone.'))return;W.capsules.find(c=>c.id===activeCap).campaigns.splice(i,1);renderCamps();renderStats();toast('Campaign deleted');}
+
+// ── CONTENT EDITOR ─────────────────────────────
+function renderContent(){document.getElementById('heroTag').value=W.hero.tagline||'';document.getElementById('heroSub').value=W.hero.sub||'';document.getElementById('contactEmail').value=W.contact.email||'';}
+document.getElementById('saveTextBtn').addEventListener('click',()=>{W.hero.tagline=document.getElementById('heroTag').value.trim();W.hero.sub=document.getElementById('heroSub').value.trim();W.contact.email=document.getElementById('contactEmail').value.trim();toast('Text saved! Click Save & Publish to go live.');});
+function renderDescEditor(){
+  const el=document.getElementById('descEditor');
+  el.innerHTML=W.capsules.map(c=>`<div class="frow"><label>${c.icon} ${c.title}</label><textarea id="cd_${c.id}" rows="2">${c.description}</textarea></div>`).join('')+`<div class="brow"><button class="btn btn-gold btn-sm" id="saveDescsBtn">Save descriptions</button></div>`;
+  document.getElementById('saveDescsBtn').addEventListener('click',()=>{W.capsules.forEach(c=>{const e=document.getElementById('cd_'+c.id);if(e)c.description=e.value.trim();});toast('Descriptions saved!');});
+}
+
+// ── SOCIAL ─────────────────────────────────────
+function renderSocial(){document.getElementById('sIG').value=W.social.instagram||'';document.getElementById('sTT').value=W.social.tiktok||'';document.getElementById('sYT').value=W.social.youtube||'';document.getElementById('sFV').value=W.social.fiverr||'';}
+document.getElementById('saveSocBtn').addEventListener('click',()=>{W.social.instagram=document.getElementById('sIG').value.trim();W.social.tiktok=document.getElementById('sTT').value.trim();W.social.youtube=document.getElementById('sYT').value.trim();W.social.fiverr=document.getElementById('sFV').value.trim();toast('Social links saved! Click Save & Publish to go live.');});
+
+// ── PUBLISH ────────────────────────────────────
+document.getElementById('genBtn').addEventListener('click',()=>{
+  const code='const NOVA = '+JSON.stringify(W,null,2)+';\n';
+  const box=document.getElementById('exportBox');
+  box.value=code; box.style.display='block';
+  document.getElementById('copyBtn').style.display='inline-flex';
+  toast('Generated! Click "Copy code" then paste into data.js.');
+});
+document.getElementById('copyBtn').addEventListener('click',()=>{
+  const box=document.getElementById('exportBox');
+  box.select();
+  navigator.clipboard.writeText(box.value).then(()=>toast('Copied! Paste into data.js and re-upload to Netlify.'));
+});
+
+// ── SETTINGS ───────────────────────────────────
+document.getElementById('chPwBtn').addEventListener('click',()=>{const p=document.getElementById('newPwIn').value.trim();if(!p||p.length<6){toast('Minimum 6 characters');return;}W.adminPassword=p;document.getElementById('newPwIn').value='';toast('Password changed! Click Save & Publish to make it permanent.');});
+document.getElementById('resetAllBtn').addEventListener('click',()=>{if(!confirm('Reset ALL changes back to original data.js?'))return;W=JSON.parse(JSON.stringify(NOVA));initAdmin();toast('Reset to original data.js');});
+
+// ── TOAST ──────────────────────────────────────
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+</script>
+</body>
+</html>
+<!-- GITHUB AUTO-PUBLISH PATCH — appended to admin.html -->
+<script>
+// ── GITHUB AUTO-PUBLISH ────────────────────────────────────────
+// Replaces the manual copy-paste publish flow with one-click push to GitHub
+// which triggers Netlify to auto-redeploy in ~30 seconds
+
+const GH_KEYS = {
+  token:  localStorage.getItem('gh_token')  || '',
+  repo:   localStorage.getItem('gh_repo')   || '',
+  branch: localStorage.getItem('gh_branch') || 'main'
+};
+
+// ── INJECT GITHUB SETUP UI into the publish page ──────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const publishPage = document.getElementById('pg-publish');
+  if (!publishPage) return;
+
+  const ghBox = document.createElement('div');
+  ghBox.className = 'card';
+  ghBox.id = 'ghSetupCard';
+  ghBox.innerHTML = `
+    <div class="card-title">⚡ One-Click Publish Setup (GitHub)</div>
+    <p style="font-size:12.5px;color:rgba(244,237,226,.55);line-height:1.7;margin-bottom:14px">
+      Connect to GitHub once — after that, one click publishes your site automatically.
+      Netlify will update in about 30 seconds. No copy-paste, no re-upload ever again.
+    </p>
+
+    <div id="ghNotSetup">
+      <p style="font-size:12.5px;font-weight:500;color:var(--champ);margin-bottom:12px">⚙️ Three-minute setup — do this once</p>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+          <div><strong style="font-size:12.5px">Create a free GitHub account</strong><br><p style="font-size:11.5px;color:rgba(244,237,226,.4)">Go to <strong>github.com</strong> → Sign up free → verify your email</p></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+          <div><strong style="font-size:12.5px">Upload your nova-v3-site folder to GitHub</strong><br><p style="font-size:11.5px;color:rgba(244,237,226,.4)">github.com → New repository → name it <strong>novasoleil</strong> → upload all files from nova-v3-site folder</p></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+          <div><strong style="font-size:12.5px">Connect Netlify to your GitHub repo</strong><br><p style="font-size:11.5px;color:rgba(244,237,226,.4)">netlify.com → Add new site → Import from GitHub → select <strong>novasoleil</strong> repo → deploy. Now Netlify watches GitHub.</p></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:11px;background:var(--ink);border-radius:8px;border:1px solid var(--line)">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--champ);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
+          <div><strong style="font-size:12.5px">Create a GitHub Personal Access Token</strong><br>
+            <p style="font-size:11.5px;color:rgba(244,237,226,.4)">
+              github.com → click your profile photo → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token →
+              tick <strong>repo</strong> checkbox → Generate token → <strong>copy it immediately</strong> (shown only once)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <div class="frow" style="margin:0">
+          <label>GitHub Personal Access Token</label>
+          <input type="password" id="ghTokenIn" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:10px 12px;border-radius:7px;font-size:13px;outline:none;width:100%">
+        </div>
+        <div class="frow" style="margin:0">
+          <label>GitHub username / repository name</label>
+          <input type="text" id="ghRepoIn" placeholder="yourusername/novasoleil" style="background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:10px 12px;border-radius:7px;font-size:13px;outline:none;width:100%">
+          <p class="fhint">Format: your GitHub username, a slash, then the repository name. Example: john123/novasoleil</p>
+        </div>
+        <div class="frow" style="margin:0">
+          <label>Branch name (usually: main)</label>
+          <input type="text" id="ghBranchIn" value="main" style="background:var(--ink);border:1px solid var(--line);color:var(--bone);padding:10px 12px;border-radius:7px;font-size:13px;outline:none;width:100%">
+        </div>
+        <button class="btn btn-gold btn-sm" id="saveGhBtn" style="margin-top:4px;align-self:flex-start">Save GitHub settings</button>
+      </div>
+    </div>
+
+    <div id="ghReady" style="display:none">
+      <div style="background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.3);border-radius:8px;padding:13px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px">✅</span>
+        <div>
+          <p style="font-size:13px;font-weight:500;color:#4ecfa0">GitHub connected</p>
+          <p style="font-size:11.5px;color:rgba(244,237,226,.45)" id="ghRepoLabel"></p>
+        </div>
+        <button class="btn btn-outline btn-sm" id="disconnectGhBtn" style="margin-left:auto">Disconnect</button>
+      </div>
+
+      <div style="background:rgba(212,175,122,.06);border:1px solid var(--champ-dim);border-radius:10px;padding:16px;text-align:center">
+        <p style="font-size:13px;font-weight:500;margin-bottom:6px">Ready to publish</p>
+        <p style="font-size:12px;color:rgba(244,237,226,.5);margin-bottom:14px;line-height:1.6">Click the button below. Your changes go to GitHub and Netlify updates your live site in about 30 seconds automatically.</p>
+        <button class="btn btn-gold" id="oneClickPublishBtn" style="width:100%;justify-content:center;font-size:14px;padding:14px">
+          🚀 Publish to live website now
+        </button>
+        <div id="publishStatus" style="margin-top:12px;font-size:12.5px;color:rgba(244,237,226,.5);min-height:20px"></div>
+      </div>
+    </div>
+  `;
+
+  // Insert the GitHub box at the TOP of the publish page, before existing card
+  publishPage.insertBefore(ghBox, publishPage.firstChild);
+
+  // Render initial state
+  refreshGhUI();
+});
+
+function refreshGhUI() {
+  const notSetup = document.getElementById('ghNotSetup');
+  const ready    = document.getElementById('ghReady');
+  const label    = document.getElementById('ghRepoLabel');
+  if (!notSetup || !ready) return;
+
+  if (GH_KEYS.token && GH_KEYS.repo) {
+    notSetup.style.display = 'none';
+    ready.style.display    = 'block';
+    if (label) label.textContent = 'Connected to: ' + GH_KEYS.repo + ' (' + GH_KEYS.branch + ')';
+  } else {
+    notSetup.style.display = 'block';
+    ready.style.display    = 'none';
+  }
+}
+
+// Save GitHub settings
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.id === 'saveGhBtn') {
+    const token  = (document.getElementById('ghTokenIn')?.value  || '').trim();
+    const repo   = (document.getElementById('ghRepoIn')?.value   || '').trim();
+    const branch = (document.getElementById('ghBranchIn')?.value || 'main').trim();
+
+    if (!token)        { toast('Please paste your GitHub token'); return; }
+    if (!repo || !repo.includes('/')) { toast('Format must be: username/reponame — e.g. john123/novasoleil'); return; }
+
+    GH_KEYS.token  = token;
+    GH_KEYS.repo   = repo;
+    GH_KEYS.branch = branch;
+    localStorage.setItem('gh_token',  token);
+    localStorage.setItem('gh_repo',   repo);
+    localStorage.setItem('gh_branch', branch);
+    refreshGhUI();
+    toast('GitHub settings saved! You can now publish with one click.');
+  }
+
+  if (e.target && e.target.id === 'disconnectGhBtn') {
+    GH_KEYS.token = ''; GH_KEYS.repo = ''; GH_KEYS.branch = 'main';
+    localStorage.removeItem('gh_token');
+    localStorage.removeItem('gh_repo');
+    localStorage.removeItem('gh_branch');
+    refreshGhUI();
+    toast('GitHub disconnected');
+  }
+
+  if (e.target && e.target.id === 'oneClickPublishBtn') {
+    publishToGitHub();
+  }
+});
+
+// ── CORE PUBLISH FUNCTION ──────────────────────────────────────
+async function publishToGitHub() {
+  const btn    = document.getElementById('oneClickPublishBtn');
+  const status = document.getElementById('publishStatus');
+
+  if (!GH_KEYS.token || !GH_KEYS.repo) {
+    toast('Please complete the GitHub setup first'); return;
+  }
+
+  // Use the working copy W from the main admin script
+  if (typeof W === 'undefined') { toast('Please unlock the admin panel first'); return; }
+
+  btn.disabled   = true;
+  btn.textContent = '⏳ Publishing...';
+  if (status) status.textContent = 'Connecting to GitHub...';
+
+  const newContent = 'const NOVA = ' + JSON.stringify(W, null, 2) + ';\n';
+  const encoded    = btoa(unescape(encodeURIComponent(newContent)));
+  const apiBase    = 'https://api.github.com/repos/' + GH_KEYS.repo;
+  const filePath   = 'data.js';
+  const headers    = {
+    'Authorization': 'token ' + GH_KEYS.token,
+    'Content-Type':  'application/json',
+    'Accept':        'application/vnd.github.v3+json'
+  };
+
+  try {
+    // Step 1 — get current file SHA (needed by GitHub API to update a file)
+    if (status) status.textContent = 'Getting current file info...';
+    const getRes = await fetch(apiBase + '/contents/' + filePath + '?ref=' + GH_KEYS.branch, { headers });
+
+    let sha = null;
+    if (getRes.ok) {
+      const getData = await getRes.json();
+      sha = getData.sha;
+    } else if (getRes.status !== 404) {
+      const err = await getRes.json();
+      throw new Error('GitHub error: ' + (err.message || getRes.status));
+    }
+
+    // Step 2 — push the updated data.js
+    if (status) status.textContent = 'Uploading data.js to GitHub...';
+    const body = {
+      message: 'Admin update — ' + new Date().toLocaleString(),
+      content: encoded,
+      branch:  GH_KEYS.branch
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(apiBase + '/contents/' + filePath, {
+      method:  'PUT',
+      headers,
+      body:    JSON.stringify(body)
+    });
+
+    if (!putRes.ok) {
+      const err = await putRes.json();
+      throw new Error(err.message || 'Upload failed (' + putRes.status + ')');
+    }
+
+    // Success
+    if (status) {
+      status.innerHTML = '✅ <strong style="color:#4ecfa0">Published!</strong> Netlify is updating your live site — ready in about 30 seconds. <a href="https://novasoleil.netlify.app" target="_blank" style="color:var(--champ);text-decoration:underline">Check live site →</a>';
+    }
+    toast('✅ Published! Your live site will update in ~30 seconds.');
+
+  } catch (err) {
+    if (status) status.innerHTML = '❌ <span style="color:#f0a0a0">Error: ' + err.message + '</span>';
+    toast('Publish failed: ' + err.message);
+    console.error('GitHub publish error:', err);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '🚀 Publish to live website now';
+  }
+}
+</script>
